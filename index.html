@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codeforces Standings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-4">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Codeforces Standings</h1>
+    <div id="standings" class="bg-white shadow-md rounded-xl overflow-hidden">
+      <table class="w-full text-left">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2">#</th>
+            <th class="px-4 py-2">User</th>
+            <th class="px-4 py-2">Rating</th>
+          </tr>
+        </thead>
+        <tbody id="standings-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const usernames = ["Ghassane", "N.N_2004", "catgirl", "whiitex", "salvini_god", "isma", "petricore"];
+
+    function getColorClass(rating) {
+      if (rating >= 2900) return "text-black";
+      if (rating >= 2600) return "text-red-900";
+      if (rating >= 2400) return "text-red-600";
+      if (rating >= 2300) return "text-orange-500";
+      if (rating >= 2100) return "text-orange-400";
+      if (rating >= 1900) return "text-purple-500";
+      if (rating >= 1600) return "text-blue-500";
+      if (rating >= 1400) return "text-cyan-500";
+      if (rating >= 1200) return "text-green-500";
+      return "text-gray-500";
+    }
+
+    async function fetchStandings() {
+      try {
+        const res = await fetch(
+          `https://codeforces.com/api/user.info?handles=${usernames.join(";")}`
+        );
+        const data = await res.json();
+
+        if (data.status !== "OK") {
+          console.error("Failed to fetch Codeforces data.");
+          return;
+        }
+
+        const users = data.result.sort((a, b) => b.rating - a.rating);
+        const tbody = document.getElementById("standings-body");
+        tbody.innerHTML = "";
+
+        users.forEach((user, index) => {
+          const tr = document.createElement("tr");
+          tr.classList.add("border-t");
+
+          tr.innerHTML = `
+            <td class="px-4 py-2">${index + 1}</td>
+            <td class="px-4 py-2 flex items-center gap-2">
+              <img src="${user.titlePhoto}" alt="${user.handle}" class="w-8 h-8 rounded-full" />
+              <span class="font-semibold ${getColorClass(user.rating)}">${user.handle}</span>
+            </td>
+            <td class="px-4 py-2">${user.rating}</td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+
+    fetchStandings();
+  </script>
+</body>
+</html>
